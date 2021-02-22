@@ -35,7 +35,7 @@ async fn get(query: Query<MarkersGetQuery>) -> impl Responder {
             longitude: rng.gen_range(query.west..query.east),
             zoom: rng.gen_range(0..=query.zoom),
         };
-        markers.push(marker)
+        markers.push(marker);
     }
 
     let doc = vec_to_jsonapi_document(markers);
