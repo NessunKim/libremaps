@@ -1,38 +1,48 @@
-use crate::markers::{Marker, MARKERS};
-use actix_web::{get, web::Query, HttpResponse, Responder};
+use crate::db::DbPool;
+use crate::models::Marker;
+use actix_web::{
+    get,
+    web::{block, Data, Query},
+    Error, HttpResponse,
+};
 use jsonapi::api::*;
 use jsonapi::jsonapi_model;
 use jsonapi::model::*;
-// use rand::Rng;
 
 jsonapi_model!(Marker; "markers");
 
 #[derive(Deserialize)]
 struct MarkersGetQuery {
-    west: f32,
-    east: f32,
-    north: f32,
-    south: f32,
-    zoom: i32,
+    west: f64,
+    east: f64,
+    north: f64,
+    south: f64,
+    zoom: i16,
 }
 
 #[get("/markers")]
-async fn get(query: Query<MarkersGetQuery>) -> impl Responder {
-    // let mut rng = rand::thread_rng();
-    // let mut markers = vec![];
-    // for i in 1..=30 {
-    //     let marker = Marker {
-    //         id: format!("{}", i),
-    //         name: format!("Example{}", i),
-    //         latitude: rng.gen_range(query.south..query.north),
-    //         longitude: rng.gen_range(query.west..query.east),
-    //         zoom: rng.gen_range(0..=query.zoom),
-    //     };
-    //     markers.push(marker);
-    // }
-    let markers = unsafe { MARKERS.clone() };
+async fn get(pool: Data<DbPool>, query: Query<MarkersGetQuery>) -> Result<HttpResponse, Error> {
+    let conn = pool.get().map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+    let markers = block(move || {
+        Marker::find(
+            &conn,
+            query.south,
+            query.north,
+            query.west,
+            query.east,
+            query.zoom,
+        )
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
 
     let doc = vec_to_jsonapi_document(markers);
 
-    HttpResponse::Ok().json(doc)
+    Ok(HttpResponse::Ok().json(doc))
 }
