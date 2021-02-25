@@ -9,7 +9,7 @@ use jsonapi::api::*;
 use jsonapi::jsonapi_model;
 use jsonapi::model::*;
 
-jsonapi_model!(Marker; "markers");
+jsonapi_model!(Marker; "marker");
 
 #[derive(Deserialize)]
 struct MarkersGetQuery {
