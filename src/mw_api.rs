@@ -79,11 +79,9 @@ pub async fn parse_page(page_id: i32) -> Result<Vec<NewMarker>, Box<dyn std::err
     let page_name = resp.parse.title;
     let page_revid = resp.parse.revid;
     let fragment = Html::parse_fragment(&resp.parse.text.content);
-    let selector = Selector::parse(".libremaps-marker").unwrap();
+    let selector = Selector::parse(".libremaps-marker").map_err(|_| "Parsing html failed")?;
     let mut new_markers: Vec<NewMarker> = vec![];
     for element in fragment.select(&selector) {
-        // dbg!(element.value().attr("data-lng"));
-        // dbg!(element.value().attr("data-lat"));
         let e = element.value();
         let marker = NewMarker {
             name: e

@@ -56,8 +56,14 @@ impl Marker {
         let mut new_markers: Vec<NewMarker> = vec![];
 
         for page_id in to_update_page_ids {
-            let mut markers = mw_api::parse_page(page_id).await?;
-            new_markers.append(&mut markers);
+            match mw_api::parse_page(page_id).await {
+                Ok(mut markers) => {
+                    new_markers.append(&mut markers);
+                }
+                Err(e) => {
+                    dbg!(e);
+                }
+            }
         }
 
         dbg!(&new_markers);
