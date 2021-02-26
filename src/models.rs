@@ -36,12 +36,29 @@ impl Marker {
         east: f64,
         zoom: i16,
     ) -> Result<Vec<Self>> {
-        let results = markers::table
-            .filter(markers::latitude.between(south, north))
-            .filter(markers::longitude.between(west, east))
-            .filter(markers::zoom.le(zoom))
-            .load::<Self>(conn)?;
-        Ok(results)
+        let west = west + (-west / 360.).round() * 360.;
+        let east = east + (-east / 360.).round() * 360.;
+        if west < east {
+            let results = markers::table
+                .filter(markers::latitude.between(south, north))
+                .filter(markers::longitude.between(west, east))
+                .filter(markers::zoom.le(zoom))
+                .limit(100)
+                .load::<Self>(conn)?;
+            Ok(results)
+        } else {
+            let results = markers::table
+                .filter(markers::latitude.between(south, north))
+                .filter(
+                    markers::longitude
+                        .between(west, 180.)
+                        .or(markers::longitude.between(-180., east)),
+                )
+                .filter(markers::zoom.le(zoom))
+                .limit(100)
+                .load::<Self>(conn)?;
+            Ok(results)
+        }
     }
 
     pub async fn update(conn: &PgConnection) -> Result<(), Box<dyn std::error::Error>> {
