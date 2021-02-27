@@ -23,7 +23,7 @@ pub async fn run() -> std::io::Result<()> {
     let pool = db::create_connection_pool();
     let conn = pool.get().expect("Failed to get connection.");
     let update_interval = env::var("UPDATE_INTERVAL")
-        .expect("UPDATE_INTERVAL is not set in .env file")
+        .expect("UPDATE_INTERVAL is not set")
         .parse::<u64>()
         .expect("UPDATE_INTERVAL must be an positive integer");
     spawn(async move {
@@ -50,7 +50,7 @@ pub async fn run() -> std::io::Result<()> {
             .data(pool.clone())
             .service(routes::markers::get)
     })
-    .bind(env::var("HOST").expect("HOST is not set in .env file"))?
+    .bind(env::var("HOST").expect("HOST is not set"))?
     .run()
     .await
 }
