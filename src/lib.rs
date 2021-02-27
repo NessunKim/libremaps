@@ -37,14 +37,20 @@ pub async fn run() -> std::io::Result<()> {
     });
 
     HttpServer::new(move || {
-        let cors = Cors::default().allowed_origin("http://localhost:8080");
+        let cors_str = env::var("CORS").unwrap_or_default();
+        let cors_split = cors_str.split("|");
+        let mut cors = Cors::default();
+        for domain in cors_split {
+            cors = cors.allowed_origin(&domain);
+        }
+
         App::new()
             .wrap(Logger::default())
             .wrap(cors)
             .data(pool.clone())
             .service(routes::markers::get)
     })
-    .bind("127.0.0.1:8081")?
+    .bind(env::var("HOST").expect("HOST is not set in .env file"))?
     .run()
     .await
 }
