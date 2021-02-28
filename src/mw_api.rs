@@ -86,7 +86,7 @@ pub async fn parse_page(page_id: i32) -> Result<Vec<NewMarker>, Box<dyn std::err
         let lng = e
             .attr("data-lng")
             .ok_or_else(|| anyhow!("data-lng is missing"))?
-            .parse::<f64>()?;
+            .parse::<f32>()?;
         let marker = NewMarker {
             name: e
                 .attr("data-name")
@@ -95,12 +95,12 @@ pub async fn parse_page(page_id: i32) -> Result<Vec<NewMarker>, Box<dyn std::err
             latitude: e
                 .attr("data-lat")
                 .ok_or_else(|| anyhow!("data-lat is missing"))?
-                .parse::<f64>()?,
+                .parse::<f32>()?,
             longitude: lng + (-lng / 360.).round() * 360.,
             zoom: e
                 .attr("data-zoom")
                 .ok_or_else(|| anyhow!("data-zoom is missing"))?
-                .parse::<i16>()?,
+                .parse::<i8>()?,
             page_id,
             page_name: page_name.clone(),
             page_revid,

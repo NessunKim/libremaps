@@ -1,12 +1,12 @@
 table! {
     markers (id) {
-        id -> Int4,
+        id -> Integer,
         name -> Varchar,
-        latitude -> Float8,
-        longitude -> Float8,
-        zoom -> Int2,
-        page_id -> Int4,
+        latitude -> Float,
+        longitude -> Float,
+        zoom -> Tinyint,
+        page_id -> Integer,
         page_name -> Varchar,
-        page_revid -> Int4,
+        page_revid -> Integer,
     }
 }

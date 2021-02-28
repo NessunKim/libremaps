@@ -7,9 +7,9 @@ use diesel::prelude::*;
 pub struct Marker {
     pub id: i32,
     pub name: String,
-    pub latitude: f64,
-    pub longitude: f64,
-    pub zoom: i16,
+    pub latitude: f32,
+    pub longitude: f32,
+    pub zoom: i8,
     pub page_id: i32,
     pub page_name: String,
     pub page_revid: i32,
@@ -19,9 +19,9 @@ pub struct Marker {
 #[table_name = "markers"]
 pub struct NewMarker {
     pub name: String,
-    pub latitude: f64,
-    pub longitude: f64,
-    pub zoom: i16,
+    pub latitude: f32,
+    pub longitude: f32,
+    pub zoom: i8,
     pub page_id: i32,
     pub page_name: String,
     pub page_revid: i32,
@@ -29,12 +29,12 @@ pub struct NewMarker {
 
 impl Marker {
     pub fn find(
-        conn: &PgConnection,
-        south: f64,
-        north: f64,
-        west: f64,
-        east: f64,
-        zoom: i16,
+        conn: &MysqlConnection,
+        south: f32,
+        north: f32,
+        west: f32,
+        east: f32,
+        zoom: i8,
     ) -> Result<Vec<Self>> {
         let west = west + (-west / 360.).round() * 360.;
         let east = east + (-east / 360.).round() * 360.;
@@ -61,7 +61,7 @@ impl Marker {
         }
     }
 
-    pub async fn update(conn: &PgConnection) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn update(conn: &MysqlConnection) -> Result<(), Box<dyn std::error::Error>> {
         let pages = mw_api::get_transcluding_pages().await?;
         dbg!(&pages);
         let to_update_page_ids = Self::filter_pages_to_check(conn, &pages)?;
@@ -98,7 +98,7 @@ impl Marker {
     /// Returns a list of pages that are needed to be parsed to check if it is needed to be updated.
     /// For each page, if the page is outdated or not in DB, add it to the list.
     fn filter_pages_to_check(
-        conn: &PgConnection,
+        conn: &MysqlConnection,
         pages: &[mw_api::MwPageInfo],
     ) -> Result<Vec<i32>, Box<dyn std::error::Error>> {
         let mut results: Vec<i32> = vec![];
@@ -115,7 +115,7 @@ impl Marker {
     }
 
     fn remove_invalid_markers(
-        conn: &PgConnection,
+        conn: &MysqlConnection,
         page_ids: &[i32],
     ) -> Result<(), Box<dyn std::error::Error>> {
         diesel::delete(markers::table.filter(markers::page_id.ne_all(page_ids))).execute(conn)?;

@@ -36,6 +36,8 @@ pub async fn run() -> std::io::Result<()> {
         }
     });
 
+    println!("http://{}", env::var("HOST").expect("HOST is not set"));
+
     HttpServer::new(move || {
         let cors_str = env::var("CORS").unwrap_or_default();
         let cors_split = cors_str.split("|");

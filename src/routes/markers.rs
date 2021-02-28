@@ -13,11 +13,11 @@ jsonapi_model!(Marker; "marker");
 
 #[derive(Deserialize)]
 struct MarkersGetQuery {
-    west: f64,
-    east: f64,
-    north: f64,
-    south: f64,
-    zoom: i16,
+    west: f32,
+    east: f32,
+    north: f32,
+    south: f32,
+    zoom: i8,
 }
 
 #[get("/markers")]
