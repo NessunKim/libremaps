@@ -52,8 +52,10 @@ pub async fn get_transcluding_pages() -> Result<Vec<MwPageInfo>, Box<dyn std::er
     let mut request_url = "https://librewiki.net/api.php?action=query&pageids=164536&generator=transcludedin&gtinamespace=0&gtilimit=100&prop=info&format=json".to_owned();
     loop {
         let mut response = client.get(request_url).send().await?;
-        let body = response.body().await?;
-        let resp: MwQueryResponse = serde_json::from_slice(&body)?;
+        let resp = response
+            .json::<MwQueryResponse>()
+            .limit(10 * 1024 * 1024)
+            .await?;
         for page in resp.query.pages.values() {
             pages.push(page.clone());
         }
@@ -68,14 +70,17 @@ pub async fn get_transcluding_pages() -> Result<Vec<MwPageInfo>, Box<dyn std::er
 }
 
 pub async fn parse_page(page_id: i32) -> Result<Vec<NewMarker>, Box<dyn std::error::Error>> {
+    dbg!(page_id);
     let client = Client::default();
     let request_url = format!(
         "https://librewiki.net/api.php?action=parse&pageid={}&prop=text|revid&format=json",
         page_id
     );
     let mut response = client.get(request_url).send().await?;
-    let body = response.body().await?;
-    let resp: MwParseResponse = serde_json::from_slice(&body)?;
+    let resp = response
+        .json::<MwParseResponse>()
+        .limit(10 * 1024 * 1024)
+        .await?;
     let page_name = resp.parse.title;
     let page_revid = resp.parse.revid;
     let fragment = Html::parse_fragment(&resp.parse.text.content);

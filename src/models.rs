@@ -63,7 +63,6 @@ impl Marker {
 
     pub async fn update(conn: &MysqlConnection) -> Result<(), Box<dyn std::error::Error>> {
         let pages = mw_api::get_transcluding_pages().await?;
-        dbg!(&pages);
         let to_update_page_ids = Self::filter_pages_to_check(conn, &pages)?;
         dbg!(&to_update_page_ids);
 
@@ -107,7 +106,7 @@ impl Marker {
                 .filter(markers::page_revid.eq(lastrevid))
                 .first::<Self>(conn)
                 .optional()?;
-            if first.is_none() {
+            if first.is_none() && results.len() < 10 {
                 results.push(*pageid);
             }
         }
