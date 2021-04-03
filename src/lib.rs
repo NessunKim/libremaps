@@ -50,6 +50,7 @@ pub async fn run() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(cors)
             .data(pool.clone())
+            .service(routes::get)
             .service(routes::markers::get)
     })
     .bind(env::var("HOST").expect("HOST is not set"))?
